@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="ino.web.freeBoard.mapper.FreeBoardMapper">
+
+
+	<select id ="Countlist" parameterType = "hashMap" resultType="freeBoardDto" >
+		SELECT * FROM FREEBOARD	
+		WHERE 1=1
+		<choose>
+		<when test="select == 1">
+		AND CODE_TYPE = #{one}
+		</when>
+		<when test="select == 2">
+		AND NUM = #{one}
+		</when>
+		<when test="select == 3">
+		AND TITLE LIKE '%' ||  #{one} || '%'
+		</when>
+		<when test="select == 4">
+		AND NAME LIKE '%' ||  #{one} || '%'
+		</when>
+		<when test="select == 5">
+		AND CONTENT LIKE '%' ||  #{one} || '%'
+		</when>
+		<when test="select == 6">
+		AND TO_CHAR(REGDATE, 'YYYYMMDD') BETWEEN #{one} AND #{one2}
+		</when>
+		</choose>
+		ORDER BY NUM DESC
+	</select>
+	
+	<select id="freeBoardGetList" parameterType = "hashMap" resultType="freeBoardDto" > <!-- resultType="ino.web.board.dto.BoardDto" -->
+		select RNUM,DECODE(CODE_TYPE, '01', '자유', '02', '익명', '03', 'QnA') as codeType,NUM, NAME, TITLE, CONTENT, TO_CHAR(REGDATE , 'YYYY/MM/DD') AS REGDATE
+		from(SELECT rownum as RNUM,A.* FROM (select * from FREEBOARD where 1=1  
+		
+		<choose>
+		<when test="select == 1">
+		AND CODE_TYPE = #{one}
+		</when>
+		<when test="select == 2">
+		AND NUM = #{one}
+		</when>
+		<when test="select == 3">
+		AND TITLE LIKE '%' ||  #{one} || '%'
+		</when>
+		<when test="select == 4">
+		AND NAME LIKE '%' ||  #{one} || '%'
+		</when>
+		<when test="select == 5">
+		AND CONTENT LIKE '%' ||  #{one} || '%'
+		</when>
+		<when test="select == 6">
+		AND TO_CHAR(REGDATE, 'YYYYMMDD') BETWEEN #{one} AND #{one2}
+		</when>
+		</choose>
+		order by num desc)A)
+		WHERE RNUM between #{page1} and #{page2}
+		ORDER BY NUM DESC
+	</select>
+
+	<insert id="freeBoardInsertPro" parameterType="freeBoardDto">
+		INSERT INTO FREEBOARD(CODE_TYPE, NUM, TITLE, NAME, REGDATE, CONTENT)
+		VALUES(#{codeType}, NUM.NEXTVAL, #{title}, #{name}, SYSDATE, #{content})
+	</insert>
+
+	<select id="freeBoardDetailByNum" resultType="freeBoardDto" parameterType="int">
+		SELECT CODE_TYPE as codeType, NUM, TITLE, NAME, TO_CHAR(REGDATE,'YYYY/MM/DD') REGDATE, CONTENT 
+		FROM FREEBOARD
+		WHERE NUM=#{num}
+	</select>
+
+	<select id="freeBoardNewNum" resultType="int">
+		SELECT MAX(NUM)
+		FROM FREEBOARD
+	</select>
+
+	<update id="freeBoardModify" parameterType="freeBoardDto">
+		UPDATE FREEBOARD
+		SET CODE_TYPE = #{codeType}, TITLE = #{title}, CONTENT = #{content}
+		WHERE NUM = #{num}
+
+	</update>
+
+	<update id="freeBoardDelete" parameterType="int">
+		DELETE FROM FREEBOARD
+		WHERE NUM
+		= #{num}
+
+	</update>
+	<delete id="FreeBoardCheckDelete" parameterType="int">
+		DELETE FROM FREEBOARD
+		WHERE NUM IN
+		<foreach collection="list" item="num" open="(" close=")" separator=",">
+		#{num}
+		</foreach>
+		 
+
+	</delete>
+
+
+</mapper>
